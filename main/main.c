@@ -45,6 +45,9 @@ void app_main(void)
 {
     bsp_esp32_board_early_init();
 
+    char locked_id[32] = {0};
+    bsp_get_or_lock_device_id(locked_id, sizeof(locked_id));
+
     pan_brain_bsp_t bsp = {
         .sys = &bsp_sys,
         .gpio = &bsp_gpio,
@@ -67,6 +70,14 @@ void app_main(void)
     };
 
     pan_brain_init(&g_brain, &bsp);
+    if (locked_id[0] != '\0') {
+        strncpy(g_brain.cfg.device_id, locked_id, sizeof(g_brain.cfg.device_id) - 1);
+        g_brain.cfg.device_id[sizeof(g_brain.cfg.device_id) - 1] = '\0';
+        g_brain.modem.device_id = g_brain.cfg.device_id;
+        g_brain.link_router.device_id = g_brain.cfg.device_id;
+    }
+    ESP_LOGI(TAG, "PAN-BRAIN active: Device ID='%s' APN='%s' MQTT='%s:%u'",
+             g_brain.cfg.device_id, g_brain.cfg.apn, g_brain.cfg.mqtt_host, (unsigned)g_brain.cfg.mqtt_port);
     ESP_LOGI(TAG, "PAN-BRAIN initialized on LilyGO T-SIM7000G (Onboard LED GPIO %d)", PIN_ONBOARD_LED);
 
     /* Core 1: Hard real-time Flight Control (500Hz) & EKF/Mission/Failsafe (100Hz) */

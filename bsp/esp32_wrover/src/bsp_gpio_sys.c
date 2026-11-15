@@ -10,6 +10,8 @@
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_mac.h"
+#include "nvs.h"
 #include "nvs_flash.h"
 
 #include <stdlib.h>
@@ -201,4 +203,56 @@ int bsp_esp32_board_early_init(void)
     }
 
     return (ret == ESP_OK) ? HAL_OK : HAL_ERR_IO;
+}
+
+int bsp_get_or_lock_device_id(char *out_id, size_t max_len)
+{
+    if (out_id == NULL || max_len < 16U) {
+        return HAL_ERR_INVALID_ARG;
+    }
+
+    nvs_handle_t nvs;
+    esp_err_t err = nvs_open("pan_device", NVS_READWRITE, &nvs);
+    if (err == ESP_OK) {
+        size_t required = max_len;
+        err = nvs_get_str(nvs, "device_id", out_id, &required);
+        if (err == ESP_OK && out_id[0] != '\0') {
+            ESP_LOGI(TAG, "Loaded locked device_id from flash: '%s'", out_id);
+            nvs_close(nvs);
+            return HAL_OK;
+        }
+    }
+
+    /* First initialization: derive permanent unique ID from factory eFuse MAC */
+    uint8_t mac[6] = {0};
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    snprintf(out_id, max_len, "drone_%02x%02x%02x%02x%02x%02x",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+    if (err == ESP_OK) {
+        nvs_set_str(nvs, "device_id", out_id);
+        nvs_commit(nvs);
+        nvs_close(nvs);
+        ESP_LOGI(TAG, "First initialization: LOCKED unique device_id '%s' into NVS flash", out_id);
+    } else {
+        ESP_LOGW(TAG, "Generated hardware ID '%s' (NVS write err 0x%x)", out_id, (unsigned)err);
+    }
+    return HAL_OK;
+}
+
+int bsp_lock_device_id(const char *new_id)
+{
+    if (new_id == NULL || new_id[0] == '\0') {
+        return HAL_ERR_INVALID_ARG;
+    }
+    nvs_handle_t nvs;
+    esp_err_t err = nvs_open("pan_device", NVS_READWRITE, &nvs);
+    if (err != ESP_OK) {
+        return HAL_ERR_IO;
+    }
+    nvs_set_str(nvs, "device_id", new_id);
+    nvs_commit(nvs);
+    nvs_close(nvs);
+    ESP_LOGI(TAG, "Custom device ID permanently locked in flash: '%s'", new_id);
+    return HAL_OK;
 }

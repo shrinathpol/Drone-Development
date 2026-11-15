@@ -21,5 +21,6 @@
         "--background-index",
         "--query-driver=**",
         "--compile-commands-dir=e:\\Program\\ESP32_Devlopment\\drone\\build"
-    ]
+    ],
+    "idf.monitorPort": "COM7"
 }

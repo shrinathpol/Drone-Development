@@ -264,9 +264,18 @@ static void process_rx_line(sim7000g_dev_t *dev, const char *line)
         if (dev->sub_step < 2U && is_ok) {
             dev->sub_step++;
             dev->cmd_in_flight = false;
-        } else if (strncmp(line, "+CGREG:", 7) == 0 || strncmp(line, "+CEREG:", 7) == 0) {
+        } else if (strncmp(line, "+CGREG:", 7) == 0 ||
+                   strncmp(line, "+CEREG:", 7) == 0 ||
+                   strncmp(line, "+CREG:", 6) == 0) {
+            const char *p = (line[5] == ':') ? (line + 6) : (line + 7);
             int n = 0, stat = 0;
-            if (sscanf(line + 7, " %d,%d", &n, &stat) == 2 && (stat == 1 || stat == 5)) {
+            bool reg_ok = false;
+            if (sscanf(p, " %d,%d", &n, &stat) == 2) {
+                if (stat == 1 || stat == 5) reg_ok = true;
+            } else if (sscanf(p, " %d", &stat) == 1) {
+                if (stat == 1 || stat == 5) reg_ok = true;
+            }
+            if (reg_ok) {
                 dev->is_net_connected = true;
                 transition_state(dev, MODEM_STATE_ACTIVATE_PDP, 0U);
             }
@@ -528,7 +537,7 @@ void sim7000g_step_poll(sim7000g_dev_t *dev)
     case MODEM_STATE_ACTIVATE_PDP:
         if (!dev->cmd_in_flight) {
             char cmd[128];
-            const char *apn = (dev->apn != NULL) ? dev->apn : "iot.com";
+            const char *apn = (dev->apn != NULL && dev->apn[0] != '\0') ? dev->apn : "bsnlnet";
             switch (dev->sub_step) {
             case 0U:
                 snprintf(cmd, sizeof(cmd), "AT+CGDCONT=1,\"IP\",\"%s\"\r\n", apn);

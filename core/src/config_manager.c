@@ -13,7 +13,7 @@ void config_manager_set_defaults(pan_config_t *cfg)
     memset(cfg, 0, sizeof(*cfg));
     cfg->role = ROLE_DRONE;
     snprintf(cfg->device_id, sizeof(cfg->device_id), "drone_brain_01");
-    snprintf(cfg->apn, sizeof(cfg->apn), "iot.com");
+    snprintf(cfg->apn, sizeof(cfg->apn), "bsnlnet");
     snprintf(cfg->mqtt_host, sizeof(cfg->mqtt_host), "broker.hivemq.com");
     cfg->mqtt_port = 1883U;
     snprintf(cfg->hmac_secret, sizeof(cfg->hmac_secret), "PAN_BRAIN_DEV_KEY_2026");

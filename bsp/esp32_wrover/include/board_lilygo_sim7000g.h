@@ -92,6 +92,13 @@ extern hal_wireless_t bsp_wireless;
 int bsp_esp32_board_early_init(void);
 
 /**
+ * @brief Retrieve or permanently lock unique hardware ID into NVS flash.
+ *        If not already set in NVS, derives from factory eFuse MAC and locks it.
+ */
+int bsp_get_or_lock_device_id(char *out_id, size_t max_len);
+int bsp_lock_device_id(const char *new_id);
+
+/**
  * @brief Ensure HSPI (SPI2_HOST) bus is initialized exactly once (shared by SD card & SPI sensors).
  */
 int bsp_spi_ensure_bus_init(void);

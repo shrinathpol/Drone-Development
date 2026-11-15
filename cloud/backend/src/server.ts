@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import dgram from 'dgram';
+import fs from 'fs';
 import http from 'http';
+import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import mqtt, { MqttClient } from 'mqtt';
@@ -19,10 +21,10 @@ import { BuiltinSitlSimulator } from './sitlSim';
 const PORT = Number(process.env.PORT ?? 8080);
 const UDP_PORT = Number(process.env.UDP_PORT ?? 14550);
 const UDP_CMD_PORT = Number(process.env.UDP_CMD_PORT ?? 14551);
-const MQTT_URL = process.env.MQTT_URL ?? 'mqtt://localhost:1883';
+const MQTT_URL = process.env.MQTT_URL ?? 'mqtt://broker.hivemq.com:1883';
 const PG_URL = process.env.PG_URL ?? '';
 const HMAC_SECRET = process.env.HMAC_SECRET ?? 'PAN_BRAIN_DEV_KEY_2026';
-const DEFAULT_DEVICE_ID = process.env.DEVICE_ID ?? 'pan-brain-01';
+const DEFAULT_DEVICE_ID = process.env.DEVICE_ID ?? 'drone_brain_01';
 const ENABLE_SITL_SIM = (process.env.ENABLE_SITL_SIM ?? 'true').toLowerCase() === 'true';
 
 const app = express();
@@ -145,7 +147,7 @@ function initMqtt(): void {
   mqttClient.on('connect', () => {
     mqttConnected = true;
     console.log(`[MQTT] Connected to ${MQTT_URL}`);
-    mqttClient?.subscribe(['drone/+/telem', 'drone/+/alert']);
+    mqttClient?.subscribe(['drone/+/telemetry', 'drone/+/telem', 'drone/+/alert']);
   });
   mqttClient.on('close', () => {
     mqttConnected = false;
@@ -317,6 +319,21 @@ app.post('/api/sim/toggle', (req, res) => {
   }
   res.json({ sitlSimActive: sitl.isRunning() });
 });
+
+const frontendDistDir = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistDir)) {
+  app.use(express.static(frontendDistDir));
+  app.use((req, res, next) => {
+    if (
+      (req.method !== 'GET' && req.method !== 'HEAD') ||
+      req.path.startsWith('/api/') ||
+      req.path.startsWith('/ws/')
+    ) {
+      return next();
+    }
+    return res.sendFile(path.join(frontendDistDir, 'index.html'));
+  });
+}
 
 wss.on('connection', (ws) => {
   if (latestTelemetry) {

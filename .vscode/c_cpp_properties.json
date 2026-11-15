@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "ESP-IDF",
+            "compilerPath": "",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "intelliSenseMode": "gcc-x86",
+            "includePath": [
+                "${workspaceFolder}/bsp/include",
+                "${workspaceFolder}/bsp/esp32_wrover/include",
+                "${workspaceFolder}/drivers/include",
+                "${workspaceFolder}/core/include",
+                "${workspaceFolder}/app/include",
+                "${workspaceFolder}/main"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}

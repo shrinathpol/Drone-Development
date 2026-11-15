@@ -1,0 +1,66 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "../app/src/main_brain.c"
+        "../core/src/telemetry_proto.c"
+        "../core/src/crypto_auth.c"
+        "../core/src/offline_queue.c"
+        "../core/src/dsp_filters.c"
+        "../core/src/ahrs_fusion.c"
+        "../core/src/ekf_nav.c"
+        "../core/src/flight_pid.c"
+        "../core/src/mission_engine.c"
+        "../core/src/failsafe_engine.c"
+        "../core/src/link_router.c"
+        "../core/src/ota_manager.c"
+        "../core/src/config_manager.c"
+        "../drivers/src/modem_sim7000g.c"
+        "../drivers/src/imu_universal.c"
+        "../drivers/src/env_sensors.c"
+        "../drivers/src/gps_ublox.c"
+        "../drivers/src/optflow_pmw3901.c"
+        "../drivers/src/motor_esc.c"
+        "../drivers/src/rc_radio.c"
+        "../drivers/src/camera_ctrl.c"
+        "../drivers/src/led_status.c"
+        "../bsp/esp32_wrover/src/bsp_gpio_sys.c"
+        "../bsp/esp32_wrover/src/bsp_uart.c"
+        "../bsp/esp32_wrover/src/bsp_i2c.c"
+        "../bsp/esp32_wrover/src/bsp_spi.c"
+        "../bsp/esp32_wrover/src/bsp_mcpwm.c"
+        "../bsp/esp32_wrover/src/bsp_sdcard.c"
+        "../bsp/esp32_wrover/src/bsp_wireless_cfg.c"
+    INCLUDE_DIRS
+        "."
+        "../app/include"
+        "../core/include"
+        "../drivers/include"
+        "../bsp/include"
+        "../bsp/esp32_wrover/include"
+    REQUIRES
+        esp_driver_gpio
+        esp_driver_uart
+        esp_driver_i2c
+        esp_driver_spi
+        esp_driver_mcpwm
+        esp_driver_sdspi
+        esp_adc
+        fatfs
+        sdmmc
+        vfs
+        esp_timer
+        esp_hw_support
+        esp_system
+        esp_psram
+        app_update
+        esp_partition
+        nvs_flash
+        esp_wifi
+        esp_event
+        esp_netif
+        esp_http_server
+        lwip
+)
+
+# Enforce C11 on portable core, drivers, and app layers
+target_compile_options(${COMPONENT_LIB} PRIVATE -std=gnu11 -Wall -Wextra -Wno-unused-parameter)

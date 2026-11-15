@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdbtarget",
+            "request": "attach",
+            "name": "ESP-Prog JTAG Attach (OpenOCD)",
+            "program": "${workspaceFolder}/build/pan_brain_firmware.elf",
+            "gdb": "C:/Espressif/tools/xtensa-esp-elf-gdb/17.1_20260402/xtensa-esp-elf-gdb/bin/xtensa-esp32-elf-gdb.exe",
+            "target": {
+                "type": "remote",
+                "host": "localhost",
+                "port": "3333",
+                "connectCommands": [
+                    "set remote hardware-watchpoint-limit 2",
+                    "mon reset halt",
+                    "maintenance flush register-cache",
+                    "thb app_main"
+                ]
+            }
+        },
+        {
+            "type": "gdbtarget",
+            "request": "attach",
+            "name": "Eclipse CDT GDB Adapter"
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: pan-brain-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: pan-brain-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: panbrain
+      POSTGRES_PASSWORD: panbrain_secret
+      POSTGRES_DB: panbrain
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U panbrain -d panbrain"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pan-brain-backend
+    restart: unless-stopped
+    depends_on:
+      mosquitto:
+        condition: service_started
+      timescaledb:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      UDP_PORT: 14550
+      MQTT_URL: mqtt://mosquitto:1883
+      PG_URL: postgresql://panbrain:panbrain_secret@timescaledb:5432/panbrain
+      HMAC_SECRET: PAN_BRAIN_DEV_KEY_2026
+      DEVICE_ID: pan-brain-01
+      ENABLE_SITL_SIM: "false"
+    ports:
+      - "8080:8080"
+      - "14550:14550/udp"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pan-brain-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  timescaledb_data:
+

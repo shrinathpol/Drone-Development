@@ -1,0 +1,25 @@
+{
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.extensionActivationMode": "always",
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false,
+    "cmake.automaticReconfigure": false,
+    "cmake.autoSelectActiveFolder": false,
+    "cmake.sourceDirectory": "E:/Program/ESP32_Devlopment/drone",
+    "idf.flashType": "UART",
+    "idf.openOcdConfigs": [
+        "board/esp32-wrover-kit-3.3v.cfg"
+    ],
+    "idf.port": "COM7",
+    "idf.portWin": "COM7",
+    "idf.currentSetup": "D:\\esp\\v6.1\\esp-idf",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32"
+    },
+    "clangd.path": "C:\\Espressif\\tools\\esp-clangd\\esp-21.1.3_20260408\\esp-clangd\\bin\\clangd.exe",
+    "clangd.arguments": [
+        "--background-index",
+        "--query-driver=**",
+        "--compile-commands-dir=e:\\Program\\ESP32_Devlopment\\drone\\build"
+    ]
+}
